@@ -8,7 +8,13 @@ require('./services/passport');
 const authRoutes = require('./routes/authRoutes');
 
 
-mongoose.connect(keys.mongoURI);
+mongoose.connect(keys.mongoURI, () => { }, { useNewUrlParser: true })
+    .then(() => {
+        console.log('MongoDB Atlas Server Connected')
+    })
+    .catch(err => {
+        console.log(err);
+    });
 
 
 const app = express();
