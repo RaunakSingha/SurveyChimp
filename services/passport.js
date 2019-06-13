@@ -1,7 +1,7 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const keys = require('../config/keys');
 const mongoose = require('mongoose');
+const keys = require('../config/keys');
 
 const User = mongoose.model('users');
 
@@ -18,19 +18,28 @@ passport.deserializeUser((id, done) => {
 });
 
 
+
 passport.use(new GoogleStrategy({
     clientID: keys.googleClientID,
     clientSecret: keys.googleClientSecret,
-    callbackURL: '/auth/google/callback',
+    callbackURL: 'http://localhost:5000/auth/google/callback',
+    proxy: true,
 },
     (accessToken, refreshToken, profile, done) => {
+        console.log('User successfully fetched from google OAuth!');
+
+        if (mongoose.connection.readyState == 0)
+            console.log('DB not connected');
+
         User.findOne({ googleId: profile.id })
             .then((existingUser) => {
                 if (existingUser) {
+                    console.log("Request from registered user");
                     done(null, existingUser);
                 }
 
                 else {
+                    console.log("Request from new user");
                     new User({ googleId: profile.id }).save()
                         .then(user => done(null, user));
                 }
